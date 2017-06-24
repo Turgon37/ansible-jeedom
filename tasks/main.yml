@@ -52,7 +52,7 @@
 - name: "Ensure jeedom user '{{ jeedom__user }}' is present"
   user:
     name: "{{ jeedom__user }}"
-    group: "{{ jeedom__group }}"
+    group: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
     home: "{{ jeedom__root }}"
     shell: /usr/sbin/nologin
     comment: "JEEDOM User"
