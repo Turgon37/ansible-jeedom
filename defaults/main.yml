@@ -1,0 +1,25 @@
+---
+# Jeedom role configuration
+#
+
+# Release channel of Jeedom. It the name of the revision that will be downloaded from jeedom website
+jeedom__version: stable
+
+# The version of the ansible hook to use to setup jeedom
+jeedom__hook_version: 2.4.6
+
+# List of package to install with jeedom
+jeedom__packages: []
+
+# Set here the name of the database client package to use
+# mysql-client or mariadb-client
+jeedom__database_client_package: mariadb-client
+
+# Define here the root directory of jeedom installation
+#jeedom__root: /var/www/html
+
+# Set the linux user use by jeedom, php and other daemon related to jeedom
+jeedom__user: www-data
+
+# Set the linux group (default to the user)
+#jeedom__group: www-data

@@ -1,0 +1,62 @@
+---
+- name: Include the OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}.yml"
+      skip: true
+  tags: ['jeedom']
+
+- name: Include the version specific variables
+  include_vars: "{{ jeedom__version }}.yml"
+  ignore_errors: yes
+  tags: ['jeedom']
+  
+- name: Include the hook specific variables
+  include_vars: "{{ jeedom__hook_version }}.yml"
+  ignore_errors: yes
+  tags: ['jeedom']
+
+- name: Assert required variables
+  assert:
+    that:
+      - jeedom__root is defined and jeedom__root | length > 0
+      - jeedom__user is defined and jeedom__user | length > 0
+      - jeedom__group is not defined or jeedom__group | length > 0
+  tags: ['jeedom']
+
+- name: Prepare the required packages list
+  set_fact:
+    jeedom__packages: "{{ jeedom__packages }} + [ '{{ item }}' ]"
+  with_items:
+    - "{{ jeedom__database_client_package }}"
+  tags: ['jeedom']
+
+- name: Install the required packages
+  become: yes
+  package:
+    name: '{{ item }}'
+    state: latest
+  with_items: '{{ jeedom__packages }}'
+  when: item | length > 0
+  tags: ['jeedom']
+
+- name: "Ensure jeedom group '{{ jeedom__group if jeedom__group is defined else jeedom__user }}' is present"
+  group:
+    name: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
+    system: yes
+    state: present
+  tags: ['jeedom']
+
+- name: "Ensure jeedom user '{{ jeedom__user }}' is present"
+  user:
+    name: "{{ jeedom__user }}"
+    group: "{{ jeedom__group }}"
+    home: "{{ jeedom__root }}"
+    shell: /usr/sbin/nologin
+    comment: "JEEDOM User"
+    createhome: no
+    system: yes
+    state: present
+  tags: ['jeedom']

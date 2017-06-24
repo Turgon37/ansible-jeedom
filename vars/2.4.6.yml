@@ -1,0 +1,26 @@
+---
+jeedom__packages:
+  - ca-certificates
+  - cron
+  - curl
+  - espeak
+  - git
+  - libttspico-utils
+  - ntp
+  - ntpdate
+  - python
+  - python-pip
+  - php5
+  - php5-cli
+  - php5-common
+  - php5-curl
+  - php5-gd
+  - php5-json
+  - php5-ldap
+  - php5-memcached
+  - php5-mysql
+  - php5-redis
+  - php5-ssh2
+  - sudo
+  - unzip
+#  - libapache2-mod-php5
