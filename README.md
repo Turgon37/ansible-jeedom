@@ -15,6 +15,8 @@ This role is available only for Debian
 At this day the role can be used to configure :
 
   * Jeedom user/group, filesystem rights
+  * Required packages installation
+  * Jeedom cron task management
 
 ## Configuration
 
