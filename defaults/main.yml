@@ -11,9 +11,18 @@ jeedom__hook_version: 2.4.6
 # List of package to install with jeedom
 jeedom__packages: []
 
+# List of Jeedom cron jobs
+jeedom__cron: []
+
+# Set the cron file
+jeedom__cron_file: /etc/crontab
+
 # Set here the name of the database client package to use
 # mysql-client or mariadb-client
 jeedom__database_client_package: mariadb-client
+
+# Set the version of php to use in 5,7
+jeedom__php_version: 5
 
 # Define here the root directory of jeedom installation
 #jeedom__root: /var/www/html

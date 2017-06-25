@@ -26,11 +26,18 @@
       - jeedom__group is not defined or jeedom__group | length > 0
   tags: ['jeedom']
 
+- name: Prepare Jeedom root path
+  set_fact:
+    jeedom__root: "{{ jeedom__root.rstrip('/') }}"
+  tags: ['jeedom']
+
 - name: Prepare the required packages list
   set_fact:
     jeedom__packages: "{{ jeedom__packages }} + [ '{{ item }}' ]"
   with_items:
     - "{{ jeedom__database_client_package }}"
+    - "{{ jeedom__packages_php5 | d([]) if jeedom__php_version == 5 else [] }}"
+    - "{{ jeedom__packages_php7 | d([]) if jeedom__php_version == 7 else [] }}"
   tags: ['jeedom']
 
 - name: Install the required packages
@@ -53,10 +60,58 @@
   user:
     name: "{{ jeedom__user }}"
     group: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
+    shell: /usr/sbin/nologin
+    createhome: no
+    system: yes
+    state: present
+  tags: ['jeedom']
+
+- name: "Check jeedom user '{{ jeedom__user }}' metadata"
+  user:
+    name: "{{ jeedom__user }}"
+    group: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
     home: "{{ jeedom__root }}"
     shell: /usr/sbin/nologin
     comment: "JEEDOM User"
     createhome: no
     system: yes
     state: present
+  ignore_errors: yes
+  tags: ['jeedom']
+
+- name: Check for duplicate cron entries
+  command: "grep -c '{{ jeedom__cron[item].check_regexp }}' '{{ jeedom__cron_file }}'"
+  register: _jeedom__cron_check
+  with_items:
+    - '{{ jeedom__cron.keys() }}'
+  when: jeedom__cron[item].check_regexp is defined
+  check_mode: no
+  ignore_errors: yes
+  tags: ['jeedom']
+
+- name: Remove duplicates cron entries
+  lineinfile:
+    path: '{{ jeedom__cron_file }}'
+    state: absent
+    regexp: '{{ jeedom__cron[item.item].check_regexp }}'
+  with_items:
+    - '{{ _jeedom__cron_check.results }}'
+  when: item.rc == 0 and item.stdout|int > 1 and jeedom__cron[item.item].check_regexp is defined
+  tags: ['jeedom']
+
+- name: Configure crontab jobs
+  cron:
+    name: 'JEEDOM-{{ item }}'
+    day: '{{ jeedom__cron[item].day if jeedom__cron[item].day is defined else omit }}'
+    month: '{{ jeedom__cron[item].month if jeedom__cron[item].month is defined else omit }}'
+    weekday: '{{ jeedom__cron[item].weekday if jeedom__cron[item].weekday is defined else omit }}'
+    hour: '{{ jeedom__cron[item].hour if jeedom__cron[item].hour is defined else omit }}'
+    minute: '{{ jeedom__cron[item].minute if jeedom__cron[item].minute is defined else omit }}'
+    special_time: '{{ jeedom__cron[item].special_time if jeedom__cron[item].special_time is defined else omit }}'
+    job: '{{ jeedom__cron[item].job }}'
+    user: '{{ jeedom__cron[item].user if jeedom__cron[item].user is defined else jeedom__user }}'
+    cron_file: '{{ jeedom__cron_file }}'
+    state: "{{ jeedom__cron[item].state if jeedom__cron[item].state is defined else 'absent' }}"
+  with_items:
+    - '{{ jeedom__cron.keys() }}'
   tags: ['jeedom']
