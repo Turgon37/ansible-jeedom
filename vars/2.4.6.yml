@@ -10,6 +10,10 @@ jeedom__packages:
   - ntpdate
   - python
   - python-pip
+  - sudo
+  - unzip
+
+jeedom__packages_php5:
   - php5
   - php5-cli
   - php5-common
@@ -21,6 +25,27 @@ jeedom__packages:
   - php5-mysql
   - php5-redis
   - php5-ssh2
-  - sudo
-  - unzip
 #  - libapache2-mod-php5
+
+jeedom__packages_php7:
+  - php7.0
+  - php7.0-calendar
+  - php7.0-common
+  - php7.0-curl
+  - php7.0-gd
+  - php7.0-imap
+  - php7.0-json
+  - php7.0-mcrypt
+  - php7.0-mysql
+  - php7.0-opcache
+  - php7.0-soap
+  - php7.0-ssh2
+  - php7.0-xml
+  - php7.0-xmlrpc
+  - php7.0-zip
+# libapache2-mod-php7.0
+
+jeedom__cron:
+  'jeeCron':
+    job: "/usr/bin/php {{ jeedom__root }}/core/php/jeeCron.php >> /dev/null"
+    check_regexp: "{{ jeedom__root }}/core/php/jeeCron.php"
