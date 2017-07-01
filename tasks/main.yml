@@ -115,3 +115,31 @@
   with_items:
     - '{{ jeedom__cron.keys() }}'
   tags: ['jeedom']
+
+  
+# check database settings
+
+
+
+- name: Search for php.ini in /etc
+  find:
+    paths: "/etc/"
+    patterns: "php.ini"
+    recurse: yes
+  register: _jeedom__find_php_inis
+  tags: ['jeedom']
+
+- name: Configure php.ini
+  become: yes
+  lineinfile:
+    path: '{{ item[0] }}'
+    regexp: '{{ item[1].regexp }}'
+    line: '{{ item[1].line }}'
+  with_nested:
+    - "{{ _jeedom__find_php_inis.files | map(attribute='path') | list }}"
+    - "{{ jeedom__php_directives }}"
+  tags: ['jeedom']
+
+- name: Include the installation hook for specific version
+  include: "{{ jeedom__hook_version }}.yml"
+  tags: ['jeedom']
