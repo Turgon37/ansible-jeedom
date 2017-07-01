@@ -91,6 +91,16 @@
   ignore_errors: yes
   tags: ['jeedom']
 
+- name: "Ensure permissions on '{{ jeedom__root }}' are {{ jeedom__user }}:{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
+  file:
+    state: directory
+    dest: '{{ jeedom__root }}'
+    owner: '{{ jeedom__user }}'
+    group: '{{ jeedom__group if jeedom__group is defined else jeedom__user }}'
+    mode: 'u=rwX,g=rwX,o=rX'
+    recurse: yes
+  tags: ['jeedom']
+
 - name: Check for duplicate cron entries
   become: yes
   command: "grep -c '{{ jeedom__cron[item].check_regexp }}' '{{ jeedom__cron_file }}'"
