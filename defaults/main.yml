@@ -17,6 +17,9 @@ jeedom__cron: []
 # Set the cron file
 jeedom__cron_file: /etc/crontab
 
+# List of php settings to apply
+jeedom__php_directive: []
+
 # Set here the name of the database client package to use
 # mysql-client or mariadb-client
 jeedom__database_client_package: mariadb-client

@@ -49,3 +49,19 @@ jeedom__cron:
   'jeeCron':
     job: "/usr/bin/php {{ jeedom__root }}/core/php/jeeCron.php >> /dev/null"
     check_regexp: "{{ jeedom__root }}/core/php/jeeCron.php"
+
+jeedom__php_directives:
+  - regexp: '^max_execution_time\s*=\s*.*$'
+    line: 'max_execution_time = 300'
+
+  - regexp: '^upload_max_filesize\s*=\s*.*$'
+    line:  'upload_max_filesize = 1G'
+
+  - regexp: '^post_max_size\s*=\s*.*$'
+    line: 'post_max_size = 1G'
+
+  - regexp: '^;?opcache.enable\s*=\s*.$'
+    line: 'opcache.enable = 1'
+
+  - regexp: '^;?opcache.enable_cli\s*=\s*.$'
+    line: 'opcache.enable_cli = 1'
