@@ -131,11 +131,6 @@
     - '{{ jeedom__cron.keys() }}'
   tags: ['jeedom']
 
-  
-# check database settings
-
-
-
 - name: Search for php.ini in /etc
   find:
     paths: "/etc/"
@@ -153,6 +148,17 @@
   with_nested:
     - "{{ _jeedom__find_php_inis.files | map(attribute='path') | list }}"
     - "{{ jeedom__php_directives }}"
+  tags: ['jeedom']
+
+- name: "Create a new database '{{ jeedom__config_db_dbname }}' if needed"
+  mysql_db:
+    name: '{{ jeedom__config_db_dbname }}'
+    collation: '{{ jeedom__db_collation }}'
+    login_host: '{{ jeedom__config_db_host }}'
+    login_port: '{{ jeedom__config_db_port }}'
+    login_user: '{{ jeedom__config_db_username }}'
+    login_password: '{{ jeedom__config_db_password }}'
+    state: present
   tags: ['jeedom']
 
 - name: Include the installation hook for specific version
