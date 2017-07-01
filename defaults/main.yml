@@ -9,6 +9,9 @@ jeedom__version: stable
 jeedom__hook_version: 2.4.6
 
 # List of package to install with jeedom
+jeedom__required_packages:
+  - python-mysqldb
+
 jeedom__packages: []
 
 # List of Jeedom cron jobs

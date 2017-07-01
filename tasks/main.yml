@@ -26,6 +26,15 @@
       - jeedom__group is not defined or jeedom__group | length > 0
   tags: ['jeedom']
 
+- name: Install the required packages
+  become: yes
+  package:
+    name: '{{ item }}'
+    state: latest
+  with_items: '{{ jeedom__required_packages }}'
+  when: item | length > 0
+  tags: ['jeedom']
+
 - name: Prepare Jeedom root path
   set_fact:
     jeedom__root: "{{ jeedom__root.rstrip('/') }}"
@@ -40,7 +49,7 @@
     - "{{ jeedom__packages_php7 | d([]) if jeedom__php_version == 7 else [] }}"
   tags: ['jeedom']
 
-- name: Install the required packages
+- name: Install the jeedom packages
   become: yes
   package:
     name: '{{ item }}'
