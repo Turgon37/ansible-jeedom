@@ -50,6 +50,7 @@
   tags: ['jeedom']
 
 - name: "Ensure jeedom group '{{ jeedom__group if jeedom__group is defined else jeedom__user }}' is present"
+  become: yes
   group:
     name: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
     system: yes
@@ -57,6 +58,7 @@
   tags: ['jeedom']
 
 - name: "Ensure jeedom user '{{ jeedom__user }}' is present"
+  become: yes
   user:
     name: "{{ jeedom__user }}"
     group: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
@@ -67,6 +69,7 @@
   tags: ['jeedom']
 
 - name: "Check jeedom user '{{ jeedom__user }}' metadata"
+  become: yes
   user:
     name: "{{ jeedom__user }}"
     group: "{{ jeedom__group if jeedom__group is defined else jeedom__user }}"
@@ -80,16 +83,18 @@
   tags: ['jeedom']
 
 - name: Check for duplicate cron entries
+  become: yes
   command: "grep -c '{{ jeedom__cron[item].check_regexp }}' '{{ jeedom__cron_file }}'"
   register: _jeedom__cron_check
   with_items:
     - '{{ jeedom__cron.keys() }}'
   when: jeedom__cron[item].check_regexp is defined
-  check_mode: no
+  changed_when: False
   ignore_errors: yes
   tags: ['jeedom']
 
 - name: Remove duplicates cron entries
+  become: yes
   lineinfile:
     path: '{{ jeedom__cron_file }}'
     state: absent
@@ -100,6 +105,7 @@
   tags: ['jeedom']
 
 - name: Configure crontab jobs
+  become: yes
   cron:
     name: 'JEEDOM-{{ item }}'
     day: '{{ jeedom__cron[item].day if jeedom__cron[item].day is defined else omit }}'
@@ -111,7 +117,7 @@
     job: '{{ jeedom__cron[item].job }}'
     user: '{{ jeedom__cron[item].user if jeedom__cron[item].user is defined else jeedom__user }}'
     cron_file: '{{ jeedom__cron_file }}'
-    state: "{{ jeedom__cron[item].state if jeedom__cron[item].state is defined else 'absent' }}"
+    state: "{{ jeedom__cron[item].state if jeedom__cron[item].state is defined else 'present' }}"
   with_items:
     - '{{ jeedom__cron.keys() }}'
   tags: ['jeedom']
