@@ -8,9 +8,11 @@ jeedom__packages:
   - libttspico-utils
   - ntp
   - ntpdate
+#  - mbrola
   - python
   - python-pip
   - sudo
+  - tar
   - unzip
 
 jeedom__packages_php5:
