@@ -4,11 +4,14 @@ Ansible Role Jeedom
 :warning: This role is under development
 
 
-This roles configures an instance of Jeedom
+This roles configures an instance of Jeedom with all dependencies except Web Server.
+I consider that is not to the responsibility of this role to setup the webserver.
+Please use another role that configure an apache webserver like [Apache2 role](https://github.com/Turgon37/ansible-apache2)
 
 ## OS Family
 
-This role is available only for Debian
+This role is available only for Debian and in fact for Raspbian too.
+
 
 ## Features
 
@@ -17,6 +20,7 @@ At this day the role can be used to configure :
   * Jeedom user/group, filesystem rights
   * Required packages installation
   * Jeedom cron task management
+  * PHP directive configurations
 
 ## Jeedom supported version
 
@@ -28,8 +32,8 @@ At this day the role can be used to configure :
 
 The following variables are user writable  :
 
-| Name                       | Description                                            | 
-| ---------------------------|--------------------------------------------------------|         
+| Name                       | Description                                            |
+| ---------------------------|--------------------------------------------------------|
 | jeedom__version            | The name of the branch to use for first installation   |
 | jeedom__hook_version       | The real version of Jeedom,use to apply specifics hooks|
 | jeedom__php_version        | The php version you want to use (5/7)                  |
@@ -54,12 +58,16 @@ The following variables are automatically fill by hooks :
 * Configure a serveur with a Jeedom in /var/www/html
 
 ```
-jeedom__version: stable  
-jeedom__hook_version: 2.4.6  
-jeedom__root: /var/www/html  
-jeedom__config_db_host: 'mysql.example.com'  
-jeedom__config_db_port: '3306'  
-jeedom__config_db_dbname: 'www_jeedom'  
-jeedom__config_db_username: 'www_jeedom'
-jeedom__config_db_password: 'CXXXXXXXXXXXXXXXX'
+- hosts: all
+  roles:
+    - jeedom
+  vars:
+    jeedom__version: stable
+    jeedom__hook_version: 2.4.6
+    jeedom__root: /var/www/html
+    jeedom__config_db_host: 'mysql.example.com'
+    jeedom__config_db_port: '3306'
+    jeedom__config_db_dbname: 'www_jeedom'
+    jeedom__config_db_username: 'www_jeedom'
+    jeedom__config_db_password: 'CXXXXXXXXXXXXXXXX'
 ```
