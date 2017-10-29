@@ -1,0 +1,33 @@
+---
+
+- name: Install the required packages
+  package:
+    name:  '{{ item }}'
+    state: present
+  with_items: '{{ jeedom__required_packages_names }}'
+  when: item|length > 0
+
+- name: Install the jeedom packages
+  package:
+    name:  '{{ item }}'
+    state: present
+  with_items: '{{ jeedom__packages }}'
+  when: item|length > 0
+
+- name: Ensure install directory exists
+  file:
+    path:  '{{ jeedom__install_dir }}'
+    mode:  0755
+    state: directory
+
+- name: Test for Jeedom installation
+  stat:
+    path:   '{{ jeedom__install_dir }}/composer.json'
+  register: _jeedom__install_status
+
+- name: Checkout Jeedom source from repository
+  git:
+    repo:    '{{ jeedom__install_url }}'
+    dest:    '{{ jeedom__install_dir }}'
+    version: '{{ jeedom__install_version }}'
+  when: not _jeedom__install_status.stat.exists
