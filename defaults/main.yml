@@ -1,43 +1,34 @@
 ---
-# Jeedom role configuration
-#
+# defaults file for jeedom
+
+# Simple placeholder to allow other roles to detect this role
+jeedom__role: True
 
 # Release channel of Jeedom. It the name of the revision that will be downloaded from jeedom website
-jeedom__version: stable
+jeedom__install_version: stable
 
-# The version of the ansible hook to use to setup jeedom
-jeedom__hook_version: 2.4.6
+# Define here the root directory of jeedom installation
+jeedom__install_dir: /var/www/html
 
-# List of package to install with jeedom
-jeedom__required_packages:
-  - python-mysqldb
-
-jeedom__packages: []
-
-# List of Jeedom cron jobs
-jeedom__cron: []
+# Url of Jeedom repository
+jeedom__install_url: https://github.com/jeedom/core.git
 
 # Set the cron file
 jeedom__cron_file: /etc/crontab
 
-# List of php settings to apply
-jeedom__php_directive: []
-
-# Set here the name of the database client package to use
-# mysql-client or mariadb-client
-jeedom__database_client_package: mariadb-client
-
-# Set the version of php to use in 5,7
-jeedom__php_version: 5
-
-# Define here the root directory of jeedom installation
-#jeedom__root: /var/www/html
+# List of Jeedom cron jobs
+jeedom__cron:
+  'jeeCron':
+    job: "/usr/bin/php {{ jeedom__install_dir }}/core/php/jeeCron.php >> /dev/null"
+    check_regexp: "{{ jeedom__install_dir }}/core/php/jeeCron.php"
 
 # Set the linux user use by jeedom, php and other daemon related to jeedom
 jeedom__user: www-data
 
 # Set the linux group (default to the user)
 #jeedom__group: www-data
+
+jeedom__db_collation: utf8_unicode_ci
 
 # Jeedom database configuration
 jeedom__config_db_host: 'mysql'
@@ -46,4 +37,77 @@ jeedom__config_db_port: '3306'
 #jeedom__config_db_username: 
 #jeedom__config_db_password: 
 
-jeedom__db_collation: utf8_unicode_ci
+# List of php settings to apply
+jeedom__php_directives:
+  - regexp: '^max_execution_time\s*=\s*.*$'
+    line: 'max_execution_time = 300'
+
+  - regexp: '^upload_max_filesize\s*=\s*.*$'
+    line:  'upload_max_filesize = 1G'
+
+  - regexp: '^post_max_size\s*=\s*.*$'
+    line: 'post_max_size = 1G'
+
+  - regexp: '^;?opcache.enable\s*=\s*.$'
+    line: 'opcache.enable = 1'
+
+  - regexp: '^;?opcache.enable_cli\s*=\s*.$'
+    line: 'opcache.enable_cli = 1'
+
+# List of package to install with jeedom
+jeedom__required_packages_names:
+  - python-mysqldb
+
+# Set here the name of the database client package to use
+# mysql-client or mariadb-client
+jeedom__database_client_packages: 
+  - mariadb-client
+
+# List of packages needed for jeedom (core, plugins,...)
+jeedom__packages:
+  - ca-certificates
+  - cron
+  - curl
+  - espeak
+  - git
+  - libttspico-utils
+  - ntp
+  - ntpdate
+#  - mbrola
+  - python
+  - python-pip
+  - sudo
+  - tar
+  - unzip
+
+jeedom__packages_php5:
+  - php5
+  - php5-cli
+  - php5-common
+  - php5-curl
+  - php5-gd
+  - php5-json
+  - php5-ldap
+  - php5-memcached
+  - php5-mysql
+  - php5-redis
+  - php5-ssh2
+#  - libapache2-mod-php5
+
+jeedom__packages_php7:
+  - php7.0
+  - php7.0-calendar
+  - php7.0-common
+  - php7.0-curl
+  - php7.0-gd
+  - php7.0-imap
+  - php7.0-json
+  - php7.0-mcrypt
+  - php7.0-mysql
+  - php7.0-opcache
+  - php7.0-soap
+  - php7.0-ssh2
+  - php7.0-xml
+  - php7.0-xmlrpc
+  - php7.0-zip
+# libapache2-mod-php7.0

@@ -1,0 +1,121 @@
+---
+
+- name: "Ensure jeedom group '{{ jeedom__group if jeedom__group is defined else jeedom__user }}' is present"
+  group:
+    name:   '{{ jeedom__group|d(jeedom__user) }}'
+    system: yes
+    state:  present
+
+- name: "Ensure jeedom user '{{ jeedom__user }}' is present"
+  user:
+    name:       '{{ jeedom__user }}'
+    group:      '{{ jeedom__group|d(jeedom__user) }}'
+    shell:      /usr/sbin/nologin
+    createhome: no
+    system:     yes
+    state:      present
+
+- name: "Check jeedom user '{{ jeedom__user }}' metadata"
+  user:
+    name:       '{{ jeedom__user }}'
+    group:      '{{ jeedom__group|d(jeedom__user) }}'
+    home:       '{{ jeedom__install_dir }}'
+    shell:      /usr/sbin/nologin
+    comment:    'JEEDOM User'
+    createhome: no
+    system:     yes
+    state:      present
+  ignore_errors: yes
+
+- name: "Ensure permissions on '{{ jeedom__install_dir }}' are {{ jeedom__user }}:{{ jeedom__group|d(jeedom__user) }}"
+  file:
+    state:   directory
+    dest:    '{{ jeedom__install_dir }}'
+    owner:   '{{ jeedom__user }}'
+    group:   '{{ jeedom__group|d(jeedom__user) }}'
+    mode:    'u=rwX,g=rwX,o=rX'
+    recurse: yes
+
+- name: Check for duplicate cron entries
+  command: "grep --count '{{ item.value.check_regexp }}' '{{ jeedom__cron_file }}'"
+  with_dict: '{{ jeedom__cron }}'
+  when: item.value.check_regexp is defined
+  register: _jeedom__cron_check
+  changed_when: False
+  failed_when: _jeedom__cron_check.rc == 2
+  check_mode: no
+
+- name: Remove duplicates cron entries
+  lineinfile:
+    path:   '{{ jeedom__cron_file }}'
+    regexp: '{{ jeedom__cron[item.item].check_regexp }}'
+    state:  absent
+  with_items: '{{ _jeedom__cron_check.results }}'
+  when: item.rc == 0 and item.stdout|int > 1 and jeedom__cron[item.item].check_regexp is defined
+
+- name: Configure crontab jobs
+  cron:
+    name:         'JEEDOM-{{ item.key }}'
+    day:          '{{ item.value.day|d(omit) }}'
+    month:        '{{ item.value.month|d(omit) }}'
+    weekday:      '{{ item.value.weekday|d(omit) }}'
+    hour:         '{{ item.value.hour|d(omit) }}'
+    minute:       '{{ item.value.minute|d(omit) }}'
+    special_time: '{{ item.value.special_time|d(omit) }}'
+    job:          '{{ item.value.job }}'
+    user:         '{{ item.value.user|d(jeedom__user) }}'
+    cron_file:    '{{ jeedom__cron_file }}'
+    state:        "{{ item.value.state|d('present') }}"
+  with_dict: '{{ jeedom__cron }}'
+
+- name: Configure sudoers rights for Jeedom
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^{{ jeedom__user }} ALL='
+    line: '{{ jeedom__user }} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Search for php.ini in /etc
+  find:
+    paths: "/etc/"
+    patterns: "php.ini"
+    recurse: yes
+  register: _jeedom__find_php_inis
+
+- name: Configure php.ini
+  lineinfile:
+    path: '{{ item[0] }}'
+    regexp: '{{ item[1].regexp }}'
+    line: '{{ item[1].line }}'
+  with_nested:
+    - "{{ _jeedom__find_php_inis.files | map(attribute='path') | list }}"
+    - '{{ jeedom__php_directives }}'
+
+- name: "Create a new database '{{ jeedom__config_db_dbname }}' if needed"
+  mysql_db:
+    name:           '{{ jeedom__config_db_dbname }}'
+    collation:      '{{ jeedom__db_collation }}'
+    login_host:     '{{ jeedom__config_db_host }}'
+    login_port:     '{{ jeedom__config_db_port }}'
+    login_user:     '{{ jeedom__config_db_username }}'
+    login_password: '{{ jeedom__config_db_password }}'
+    state: present
+
+- name: Configure db params
+  lineinfile:
+    path:        '{{ jeedom__install_dir }}/core/config/common.config.php'
+    line:        "'{{ item.key }}' => '{{ item.value }}',"
+    regexp:      "'{{ item.key }}'\\s*=>.*"
+    insertafter: "'db'\\s*=>\\s*array\\("
+  with_items:
+    - key: host
+      value: '{{ jeedom__config_db_host }}'
+    - key: port
+      value: '{{ jeedom__config_db_port }}'
+    - key: dbname
+      value: '{{ jeedom__config_db_dbname }}'
+    - key: username
+      value: '{{ jeedom__config_db_username }}'
+    - key: password
+      value: '{{ jeedom__config_db_password }}'
