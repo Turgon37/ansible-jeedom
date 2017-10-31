@@ -91,6 +91,9 @@
         - commands: ALL
           run_as_user: ALL
           tags: NOPASSWD
+          defaults:
+            - defaults: '!requiretty'
+              user: root
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
 
