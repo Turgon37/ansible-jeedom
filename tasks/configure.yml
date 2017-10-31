@@ -29,12 +29,12 @@
 
 - name: "Ensure permissions on '{{ jeedom__install_dir }}' are {{ jeedom__user }}:{{ jeedom__group|d(jeedom__user) }}"
   file:
-    state:   directory
     dest:    '{{ jeedom__install_dir }}'
     owner:   '{{ jeedom__user }}'
     group:   '{{ jeedom__group|d(jeedom__user) }}'
     mode:    'u=rwX,g=rwX,o=rX'
     recurse: yes
+    state:   directory
 
 - name: Check for duplicate cron entries
   command: "grep --count '{{ item.value.check_regexp }}' '{{ jeedom__cron_file }}'"
