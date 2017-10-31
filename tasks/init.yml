@@ -7,7 +7,7 @@
       - jeedom__user is defined and jeedom__user|length > 0
       - jeedom__group is not defined or jeedom__group|length > 0
       - ansible_distribution_release != 'jessie' or jeedom__php_version == 5
-- debug: var="vars['jeedom__packages_php'~jeedom__php_version]"
+
 - name: Prepare the required packages list
   set_fact:
     jeedom__packages: "{{ jeedom__packages|union(jeedom__database_client_packages)|union(vars['jeedom__packages_php'~jeedom__php_version]|d([])) }}"
