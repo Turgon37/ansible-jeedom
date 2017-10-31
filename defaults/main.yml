@@ -22,6 +22,9 @@ jeedom__cron:
     job: "/usr/bin/php {{ jeedom__install_dir }}/core/php/jeeCron.php >> /dev/null"
     check_regexp: "{{ jeedom__install_dir }}/core/php/jeeCron.php"
 
+# Set to true to use the new sudoers role
+jeedom__sudo_use_sudoers_role: False
+
 # Set the linux user use by jeedom, php and other daemon related to jeedom
 jeedom__user: www-data
 

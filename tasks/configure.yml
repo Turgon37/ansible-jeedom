@@ -75,6 +75,24 @@
     regexp: '^{{ jeedom__user }} ALL='
     line: '{{ jeedom__user }} ALL=(ALL) NOPASSWD: ALL'
     validate: 'visudo -cf %s'
+  when: not jeedom__sudo_use_sudoers_role|bool
+
+- name: Configure sudoers rights for Jeedom
+  include_role:
+    name: sudoers
+    tasks_from: defines/sudo_rule
+  vars:
+    sudoers__sudo_rule:
+      name: jeedom_01
+      users: '{{ jeedom__user }}'
+      hosts: ALL
+      comment: 'Allow jeedom web user to run any commands'
+      commands:
+        - commands: ALL
+          run_as_user: ALL
+          tags: NOPASSWD
+      state: present
+  when: jeedom__sudo_use_sudoers_role|bool
 
 - name: Search for php.ini in /etc
   find:
