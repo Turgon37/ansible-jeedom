@@ -4,6 +4,9 @@
 # Simple placeholder to allow other roles to detect this role
 jeedom__role: True
 
+# Enable facts deploiement
+jeedom__facts: True
+
 # Release channel of Jeedom. It the name of the revision that will be downloaded from jeedom website
 jeedom__install_version: stable
 

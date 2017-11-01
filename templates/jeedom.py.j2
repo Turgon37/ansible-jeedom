@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import json
+import os
+import re
+import subprocess
+import sys
+
+jeedom_root_path = '{{ jeedom__install_dir }}'
+jeedom_version_file = jeedom_root_path + '/core/config/version'
+
+content=dict()
+
+version_re = re.compile('^(?P<version>(?P<major>[0-9]+)[^ ]+).*$')
+try:
+    if not os.path.isfile(jeedom_version_file):
+        content['error'] = 'File {} does not exists'.format(jeedom_version_file)
+    else:
+        hdl = open(jeedom_version_file, 'r')
+        match = version_re.search(hdl.read())
+        if match:
+            content['version_full'] = match.group('version')
+            content['version_major'] = match.group('major')
+except Exception as e:
+    content['error'] = str(e)
+
+if len(content) == 0:
+    content = None
+
+print(json.dumps(content))
+sys.exit(0)
