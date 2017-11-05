@@ -93,7 +93,7 @@
           tags: NOPASSWD
       defaults:
         - defaults: '!requiretty'
-          user: root
+          user: '{{ jeedom__user }}'
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
 
