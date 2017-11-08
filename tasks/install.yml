@@ -27,6 +27,12 @@
     path:   '{{ jeedom__install_dir }}/composer.json'
   register: _jeedom__install_status
 
+- name: Remove default directory when jeedom is not installed
+  file:
+    path:  '{{ jeedom__install_dir }}'
+    state: absent
+  when: not _jeedom__install_status.stat.exists
+
 - name: Checkout Jeedom source from repository
   git:
     repo:    '{{ jeedom__install_url }}'
