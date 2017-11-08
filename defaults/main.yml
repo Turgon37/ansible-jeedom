@@ -24,6 +24,7 @@ jeedom__cron:
   'jeeCron':
     job: "/usr/bin/php {{ jeedom__install_dir }}/core/php/jeeCron.php >> /dev/null"
     check_regexp: "{{ jeedom__install_dir }}/core/php/jeeCron.php"
+    state: "{{ jeedom__cron_enabled|d(True)|ternary('present', 'absent') }}"
 
 # Set to true to use the new sudoers role
 jeedom__sudo_use_sudoers_role: False
