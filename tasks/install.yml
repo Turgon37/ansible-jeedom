@@ -14,14 +14,6 @@
   with_items: '{{ jeedom__packages }}'
   when: item|length > 0
 
-- name: Ensure install directory exists
-  file:
-    path:  '{{ jeedom__install_dir }}'
-    owner: '{{ jeedom__user }}'
-    group: '{{ jeedom__group|d(jeedom__user) }}'
-    mode:  'u=rwX,g=rwX,o=rX'
-    state: directory
-
 - name: Test for Jeedom installation
   stat:
     path:   '{{ jeedom__install_dir }}/composer.json'
