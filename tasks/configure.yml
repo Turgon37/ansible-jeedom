@@ -83,6 +83,17 @@
     #- "{{ _jeedom__find_php_inis.files|map(attribute='path') | list }}"
     #- '{{ jeedom__php_directives }}'
 
+- name: Check presence of common.config
+  stat:
+    path: '{{ jeedom__install_dir }}/core/config/common.config.php'
+  register: _jeedom__common_config
+  check_mode: no
+
+- name: Fail if common config missing
+  fail:
+    msg: You must use the UI to configure the database settings for the first time
+  when: not _jeedom__common_config.stat.exists
+
 - name: Configure database params
   lineinfile:
     path:        '{{ jeedom__install_dir }}/core/config/common.config.php'
