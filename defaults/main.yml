@@ -17,14 +17,7 @@ jeedom__install_dir: /var/www/html
 jeedom__install_url: https://github.com/jeedom/core.git
 
 # Set the cron file
-jeedom__cron_file: /etc/crontab
-
-# List of Jeedom cron jobs
-jeedom__cron:
-  'jeeCron':
-    job: "/usr/bin/php {{ jeedom__install_dir }}/core/php/jeeCron.php >> /dev/null"
-    check_regexp: "{{ jeedom__install_dir }}/core/php/jeeCron.php"
-    state: "{{ jeedom__cron_enabled|d(True)|ternary('present', 'absent') }}"
+jeedom__cron_file: jeedom-jeeCron
 
 # Set to true to use the new sudoers role
 jeedom__sudo_use_sudoers_role: False

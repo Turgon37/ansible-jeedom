@@ -36,38 +36,6 @@
     recurse: yes
     state:   directory
 
-- name: Check for duplicate cron entries
-  command: "grep --count '{{ item.value.check_regexp }}' '{{ jeedom__cron_file }}'"
-  with_dict: '{{ jeedom__cron }}'
-  when: item.value.check_regexp is defined
-  register: _jeedom__cron_check
-  changed_when: False
-  failed_when: _jeedom__cron_check.rc == 2
-  check_mode: no
-
-- name: Remove duplicates cron entries
-  lineinfile:
-    path:   '{{ jeedom__cron_file }}'
-    regexp: '{{ jeedom__cron[item.item].check_regexp }}'
-    state:  absent
-  with_items: '{{ _jeedom__cron_check.results }}'
-  when: item.rc == 0 and item.stdout|int > 1 and jeedom__cron[item.item].check_regexp is defined
-
-- name: Configure crontab jobs
-  cron:
-    name:         'JEEDOM-{{ item.key }}'
-    day:          '{{ item.value.day|d(omit) }}'
-    month:        '{{ item.value.month|d(omit) }}'
-    weekday:      '{{ item.value.weekday|d(omit) }}'
-    hour:         '{{ item.value.hour|d(omit) }}'
-    minute:       '{{ item.value.minute|d(omit) }}'
-    special_time: '{{ item.value.special_time|d(omit) }}'
-    job:          '{{ item.value.job }}'
-    user:         '{{ item.value.user|d(jeedom__user) }}'
-    cron_file:    '{{ jeedom__cron_file }}'
-    state:        "{{ item.value.state|d('present') }}"
-  with_dict: '{{ jeedom__cron }}'
-
 - name: Configure sudoers rights for Jeedom
   lineinfile:
     path: /etc/sudoers
@@ -99,31 +67,23 @@
 
 - name: Search for php.ini in /etc
   find:
-    paths: "/etc/"
-    patterns: "php.ini"
-    recurse: yes
+    paths:     '/etc/'
+    patterns:  'php.ini'
+    file_type: file
+    recurse:   yes
   register: _jeedom__find_php_inis
+  check_mode: no
 
-- name: Configure php.ini
-  lineinfile:
-    path: '{{ item[0] }}'
-    regexp: '{{ item[1].regexp }}'
-    line: '{{ item[1].line }}'
-  with_nested:
-    - "{{ _jeedom__find_php_inis.files | map(attribute='path') | list }}"
-    - '{{ jeedom__php_directives }}'
+#- name: Configure php.ini
+  #lineinfile:
+    #path:   '{{ item[0] }}'
+    #regexp: '{{ item[1].regexp }}'
+    #line:   '{{ item[1].line }}'
+  #with_nested:
+    #- "{{ _jeedom__find_php_inis.files|map(attribute='path') | list }}"
+    #- '{{ jeedom__php_directives }}'
 
-- name: "Create a new database '{{ jeedom__config_db_dbname }}' if needed"
-  mysql_db:
-    name:           '{{ jeedom__config_db_dbname }}'
-    collation:      '{{ jeedom__db_collation }}'
-    login_host:     '{{ jeedom__config_db_host }}'
-    login_port:     '{{ jeedom__config_db_port }}'
-    login_user:     '{{ jeedom__config_db_username }}'
-    login_password: '{{ jeedom__config_db_password }}'
-    state: present
-
-- name: Configure db params
+- name: Configure database params
   lineinfile:
     path:        '{{ jeedom__install_dir }}/core/config/common.config.php'
     line:        "'{{ item.key }}' => '{{ item.value }}',"
@@ -140,3 +100,13 @@
       value: '{{ jeedom__config_db_username }}'
     - key: password
       value: '{{ jeedom__config_db_password }}'
+  ignore_errors: True
+  no_log: yes
+
+- name: Configure crontab jobs
+  cron:
+    name:      'JEEDOM-jeeCron'
+    job:       '/usr/bin/php {{ jeedom__install_dir }}/core/php/jeeCron.php >> /dev/null'
+    user:      '{{ jeedom__user }}'
+    cron_file: '{{ jeedom__cron_file }}'
+    state:     "{{ jeedom__cron_enabled|d(True)|ternary('present', 'absent') }}"
