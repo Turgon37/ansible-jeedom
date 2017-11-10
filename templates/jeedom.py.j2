@@ -28,7 +28,7 @@ try:
         content['error'] = 'Directory {} does not exists'.format(jeedom_plugins_dir)
     else:
         dirs = os.listdir(jeedom_plugins_dir)
-        content['plugins'] = dirs
+        content['installed_plugins'] = dirs
 except Exception as e:
     content['error'] = str(e)
 

@@ -50,7 +50,7 @@
 - name: Configure sudoers rights for Jeedom
   include_role:
     name: sudoers
-    tasks_from: defines/sudo_rule
+    tasks_from: sudo_rule
   vars:
     sudoers__sudo_rule:
       name: jeedom_01
@@ -64,7 +64,8 @@
       defaults:
         - defaults: '!requiretty'
           user: '{{ jeedom__user }}'
-        - defaults: 'listpw = never'
+        - defaults:
+            - listpw: never
           user: '{{ jeedom__user }}'
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
