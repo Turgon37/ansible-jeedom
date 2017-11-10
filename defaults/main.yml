@@ -25,6 +25,10 @@ jeedom__sudo_use_sudoers_role: False
 # Set the linux user use by jeedom, php and other daemon related to jeedom
 jeedom__user: www-data
 
+# List of groups to add jeedom user into
+jeedom__user_groups:
+  - dialout
+
 # Set the linux group (default to the user)
 #jeedom__group: www-data
 

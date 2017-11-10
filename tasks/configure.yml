@@ -10,6 +10,8 @@
   user:
     name:       '{{ jeedom__user }}'
     group:      '{{ jeedom__group|d(jeedom__user) }}'
+    groups:     '{{ jeedom__user_groups }}'
+    append:     yes
     shell:      /usr/sbin/nologin
     createhome: no
     system:     yes
