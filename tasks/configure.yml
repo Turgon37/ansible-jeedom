@@ -64,8 +64,7 @@
       defaults:
         - defaults: '!requiretty'
           user: '{{ jeedom__user }}'
-        - defaults:
-            - listpw: never
+        - listpw: never
           user: '{{ jeedom__user }}'
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
