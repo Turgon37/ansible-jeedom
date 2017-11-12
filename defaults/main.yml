@@ -106,6 +106,7 @@ jeedom__packages_php7:
   - php7.0-gd
   - php7.0-imap
   - php7.0-json
+  - php7.0-ldap
   - php7.0-mcrypt
   - php7.0-mysql
   - php7.0-opcache
