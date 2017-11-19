@@ -78,14 +78,14 @@
   register: _jeedom__find_php_inis
   check_mode: no
 
-#- name: Configure php.ini
-  #lineinfile:
-    #path:   '{{ item[0] }}'
-    #regexp: '{{ item[1].regexp }}'
-    #line:   '{{ item[1].line }}'
-  #with_nested:
-    #- "{{ _jeedom__find_php_inis.files|map(attribute='path') | list }}"
-    #- '{{ jeedom__php_directives }}'
+- name: Configure php.ini
+  lineinfile:
+    path:   '{{ item[0] }}'
+    regexp: '{{ item[1].regexp }}'
+    line:   '{{ item[1].line }}'
+  with_nested:
+    - "{{ _jeedom__find_php_inis.files|map(attribute='path') | list }}"
+    - '{{ jeedom__php_directives }}'
 
 - name: Check presence of common.config
   stat:
