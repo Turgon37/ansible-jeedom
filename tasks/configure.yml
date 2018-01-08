@@ -64,6 +64,8 @@
       defaults:
         - defaults: '!requiretty'
           user: '{{ jeedom__user }}'
+        - defaults: '!requiretty'
+          user: 'root'
         - listpw: never
           user: '{{ jeedom__user }}'
       state: present
