@@ -2,14 +2,20 @@
 # tasks file for jeedom
 
 - name: Include the OS specific variables
-  include_vars: "{{ item }}"
+  include_vars: '{{ item }}'
   with_first_found:
     - files:
-        - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
-        - "{{ ansible_distribution }}.yml"
-        - "{{ ansible_os_family }}.yml"
-        - "defaults.yml"
+        - '{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml'
+        - '{{ ansible_distribution }}.yml'
+        - '{{ ansible_os_family }}.yml'
+        - defaults.yml
       skip: true
+  tags: ['always']
+
+- name: Check role availability
+  fail:
+    msg: This module only works on Debian or derivatives like Ubuntu
+  when: ansible_os_family != 'Debian'
   tags: ['always']
 
 - import_tasks: init.yml
@@ -21,5 +27,5 @@
 - import_tasks: configure.yml
   tags: ['jeedom', 'jeedom-configure']
 
-- include_tasks: facts.yml
-  when: jeedom__facts|bool
+#- include_tasks: facts.yml
+  #when: jeedom__facts|bool

@@ -7,39 +7,115 @@ jeedom__role: True
 # Enable facts deploiement
 jeedom__facts: True
 
+
+### INSTALLATION
 # Release channel of Jeedom. It the name of the revision that will be downloaded from jeedom website
 jeedom__install_version: stable
 
 # Define here the root directory of jeedom installation
-jeedom__install_dir: /var/www/html
+jeedom__install_directory: /var/www/html
 
 # Url of Jeedom repository
-jeedom__install_url: https://github.com/jeedom/core.git
+jeedom__install_repository_url: https://github.com/jeedom/core.git
 
-# Set the cron file
-jeedom__cron_file: jeedom-jeeCron
+# List of packages needed for jeedom (core, plugins,...)
+jeedom__packages_core_names:
+  - ca-certificates
+  - cron
+  - curl
+#  - espeak
+  - git
+#  - libttspico-utils
+#  - ntp  # handled by ntp role
+#  - ntpdate
+#  - mbrola
+  - python
+  - python-pip
+  - python-wheel
+  - sudo
+  - tar
+  - unzip
+  - zlib1g-dev
 
-# Set to true to use the new sudoers role
-jeedom__sudo_use_sudoers_role: False
+# List of php packages to install per php version
+jeedom__packages_php_names:
+  5:
+    - php5
+    - php5-cli
+    - php5-common
+    - php5-curl
+    - php5-gd
+    - php5-json
+    - php5-ldap
+    - php5-memcached
+    - php5-mysql
+    - php5-redis
+    - php5-ssh2
+#  - libapache2-mod-php5
+  7:
+    - php7.0
+    - php7.0-calendar
+    - php7.0-common
+    - php7.0-curl
+    - php7.0-gd
+    - php7.0-imap
+    - php7.0-json
+    - php7.0-ldap
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-opcache
+    - php7.0-soap
+    - php7.0-ssh2
+    - php7.0-xml
+    - php7.0-xmlrpc
+    - php7.0-zip
+  # libapache2-mod-php7.0
 
-# Set the linux user use by jeedom, php and other daemon related to jeedom
+# Which php version is available to install
+jeedom__php_version: "{{
+  5 if ansible_distribution_version is version('9', '<')
+  else 7
+  }}"
+
+# Final list of packages to install
+jeedom__packages_names: '{{ jeedom__packages_core_names
+                              |union(jeedom__packages_php_names[jeedom__php_version|int])
+                          }}'
+
+
+
+### CONFIGURATION
+
+# Set the linux user and group use by jeedom, php and other daemon related to jeedom
 jeedom__user: www-data
+
+# Set the linux group (default to the user)
+jeedom__group: '{{ jeedom__user }}'
 
 # List of groups to add jeedom user into
 jeedom__user_groups:
   - dialout
 
-# Set the linux group (default to the user)
-#jeedom__group: www-data
+# Set to true to use the new sudoers role instead of lineinfile action
+jeedom__sudo_use_sudoers_role: False
 
-jeedom__db_collation: utf8_unicode_ci
+# Jeedom common configuration file
+jeedom__common_configuration_file: '{{ jeedom__install_directory }}/core/config/common.config.php'
+
+# List of custom directories to create in addition to installation directory
+jeedom__custom_folders:
+  - /tmp/jeedom
 
 # Jeedom database configuration
-jeedom__config_db_host: 'mysql'
-jeedom__config_db_port: '3306'
+jeedom__config_db_host: localhost
+jeedom__config_db_port: 3306
 #jeedom__config_db_dbname: 'jeedom'
 #jeedom__config_db_username: 
 #jeedom__config_db_password: 
+
+# Set the cron file
+jeedom__cron_file: jeedom-jeeCron
+
 
 # List of php settings to apply
 jeedom__php_directives:
@@ -57,62 +133,3 @@ jeedom__php_directives:
 
   - regexp: '^;?opcache.enable_cli\s*=\s*.$'
     line: 'opcache.enable_cli = 1'
-
-# List of package to install with jeedom
-jeedom__required_packages_names:
-  - python-mysqldb
-
-# Set here the name of the database client package to use
-# mysql-client or mariadb-client
-jeedom__database_client_packages: 
-  - mariadb-client
-
-# List of packages needed for jeedom (core, plugins,...)
-jeedom__packages:
-  - ca-certificates
-  - cron
-  - curl
-  - espeak
-  - git
-  - libttspico-utils
-  - ntp
-  - ntpdate
-#  - mbrola
-  - python
-  - python-pip
-  - sudo
-  - tar
-  - unzip
-
-jeedom__packages_php5:
-  - php5
-  - php5-cli
-  - php5-common
-  - php5-curl
-  - php5-gd
-  - php5-json
-  - php5-ldap
-  - php5-memcached
-  - php5-mysql
-  - php5-redis
-  - php5-ssh2
-#  - libapache2-mod-php5
-
-jeedom__packages_php7:
-  - php7.0
-  - php7.0-calendar
-  - php7.0-common
-  - php7.0-curl
-  - php7.0-gd
-  - php7.0-imap
-  - php7.0-json
-  - php7.0-ldap
-  - php7.0-mcrypt
-  - php7.0-mysql
-  - php7.0-opcache
-  - php7.0-soap
-  - php7.0-ssh2
-  - php7.0-xml
-  - php7.0-xmlrpc
-  - php7.0-zip
-# libapache2-mod-php7.0

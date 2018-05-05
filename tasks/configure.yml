@@ -1,50 +1,58 @@
 ---
 
-- name: "Ensure jeedom group '{{ jeedom__group if jeedom__group is defined else jeedom__user }}' is present"
+- name: Ensure jeedom group '{{ jeedom__group }}' is present
   group:
-    name:   '{{ jeedom__group|d(jeedom__user) }}'
+    name:   '{{ jeedom__group }}'
     system: yes
     state:  present
 
-- name: "Ensure jeedom user '{{ jeedom__user }}' is present"
+- name: Ensure jeedom user '{{ jeedom__user }}' is present
   user:
     name:       '{{ jeedom__user }}'
     group:      '{{ jeedom__group|d(jeedom__user) }}'
     groups:     '{{ jeedom__user_groups }}'
     append:     yes
-    shell:      /usr/sbin/nologin
     createhome: no
     system:     yes
     state:      present
 
-- name: "Check jeedom user '{{ jeedom__user }}' metadata"
+- name: Ensure jeedom user '{{ jeedom__user }}' metadata
   user:
     name:       '{{ jeedom__user }}'
     group:      '{{ jeedom__group|d(jeedom__user) }}'
-    home:       '{{ jeedom__install_dir }}'
-    shell:      /usr/sbin/nologin
-    comment:    'JEEDOM User'
+    home:       /nonexistent
+    shell:      /sbin/nologin
     createhome: no
     system:     yes
     state:      present
   ignore_errors: yes
 
-- name: "Ensure permissions on '{{ jeedom__install_dir }}' are {{ jeedom__user }}:{{ jeedom__group|d(jeedom__user) }}"
+- name: Ensure permissions on install directory
   file:
-    dest:    '{{ jeedom__install_dir }}'
+    dest:    '{{ jeedom__install_directory }}'
     owner:   '{{ jeedom__user }}'
-    group:   '{{ jeedom__group|d(jeedom__user) }}'
+    group:   '{{ jeedom__group }}'
     mode:    'u=rwX,g=rwX,o=rX'
     recurse: yes
     state:   directory
 
+- name: Create customs directories
+  file:
+    dest:  '{{ item }}'
+    owner: '{{ jeedom__user }}'
+    group: '{{ jeedom__group }}'
+    mode:  '0775'
+    state: directory
+  with_items: '{{ jeedom__custom_folders }}'
+
+### Configure sudo rights
 - name: Configure sudoers rights for Jeedom
   lineinfile:
-    path: /etc/sudoers
-    state: present
-    regexp: '^{{ jeedom__user }} ALL='
-    line: '{{ jeedom__user }} ALL=(ALL) NOPASSWD: ALL'
+    path:     /etc/sudoers
+    regexp:   '^{{ jeedom__user }} ALL='
+    line:     '{{ jeedom__user }} ALL=(ALL:ALL) NOPASSWD:ALL'
     validate: 'visudo -cf %s'
+    state:    present
   when: not jeedom__sudo_use_sudoers_role|bool
 
 - name: Configure sudoers rights for Jeedom
@@ -71,6 +79,7 @@
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
 
+### PHP TODO move to a dedicated role
 - name: Search for php.ini in /etc
   find:
     paths:     '/etc/'
@@ -89,41 +98,5 @@
     - "{{ _jeedom__find_php_inis.files|map(attribute='path') | list }}"
     - '{{ jeedom__php_directives }}'
 
-- name: Check presence of common.config
-  stat:
-    path: '{{ jeedom__install_dir }}/core/config/common.config.php'
-  register: _jeedom__common_config
-  check_mode: no
-
-- name: Fail if common config missing
-  fail:
-    msg: You must use the UI to configure the database settings for the first time
-  when: not _jeedom__common_config.stat.exists
-
-- name: Configure database params
-  lineinfile:
-    path:        '{{ jeedom__install_dir }}/core/config/common.config.php'
-    line:        "'{{ item.key }}' => '{{ item.value }}',"
-    regexp:      "'{{ item.key }}'\\s*=>.*"
-    insertafter: "'db'\\s*=>\\s*array\\("
-  with_items:
-    - key: host
-      value: '{{ jeedom__config_db_host }}'
-    - key: port
-      value: '{{ jeedom__config_db_port }}'
-    - key: dbname
-      value: '{{ jeedom__config_db_dbname }}'
-    - key: username
-      value: '{{ jeedom__config_db_username }}'
-    - key: password
-      value: '{{ jeedom__config_db_password }}'
-  ignore_errors: True
-  no_log: yes
-
-- name: Configure crontab jobs
-  cron:
-    name:      'JEEDOM-jeeCron'
-    job:       '/usr/bin/php {{ jeedom__install_dir }}/core/php/jeeCron.php >> /dev/null'
-    user:      '{{ jeedom__user }}'
-    cron_file: '{{ jeedom__cron_file }}'
-    state:     "{{ jeedom__cron_enabled|d(True)|ternary('present', 'absent') }}"
+- import_tasks: configure-jeedom.yml
+  tags: ['jeedom', 'jeedom-configure-jeedom']
