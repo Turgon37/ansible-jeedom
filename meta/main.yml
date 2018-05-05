@@ -2,12 +2,11 @@ galaxy_info:
   author: Pierre GINDRAUD
   description: This role configure Jeedom application
   license: MIT
-  min_ansible_version: 2.4
+  min_ansible_version: 2.5
   platforms:
-    - name: Debian
+    - name: Armbian
       versions:
         - 9
-        - 8
   galaxy_tags: []
 
 dependencies: []
