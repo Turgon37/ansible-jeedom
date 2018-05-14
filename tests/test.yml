@@ -1,0 +1,7 @@
+---
+- hosts: all
+  roles:
+    - cron
+    - mariadb-server
+    - role_under_test
+    - apache2
