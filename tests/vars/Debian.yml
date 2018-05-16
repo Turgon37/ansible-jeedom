@@ -1,0 +1,5 @@
+---
+
+pre_tasks__packages_names:
+  - python-enum34
+  - python-openssl
