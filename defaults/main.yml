@@ -7,8 +7,12 @@ jeedom__role: True
 # Enable facts deploiement
 jeedom__facts: True
 
+# Choose the monitoring backend to configure (if available)
+#jeedom__monitoring:
 
-### INSTALLATION
+
+### INSTALL CONFIGURATION
+# ---------------------------------------
 # Release channel of Jeedom. It the name of the revision that will be downloaded from jeedom website
 jeedom__install_version: stable
 
@@ -84,21 +88,25 @@ jeedom__packages_names: '{{ jeedom__packages_core_names
                           }}'
 
 
-
-### CONFIGURATION
+### SERVICE CONFIGURATION
+# ---------------------------------------
 
 # Set the linux user and group use by jeedom, php and other daemon related to jeedom
-jeedom__user: www-data
+jeedom__service_user: www-data
 
 # Set the linux group (default to the user)
-jeedom__group: '{{ jeedom__user }}'
+jeedom__service_group: '{{ jeedom__service_user }}'
 
 # List of groups to add jeedom user into
-jeedom__user_groups:
+jeedom__service_user_groups:
   - dialout
 
 # Set to true to use the new sudoers role instead of lineinfile action
 jeedom__sudo_use_sudoers_role: False
+
+
+### JEEDOM CONFIGURATION
+# ---------------------------------------
 
 # Jeedom common configuration file
 jeedom__common_configuration_file: '{{ jeedom__install_directory }}/core/config/common.config.php'

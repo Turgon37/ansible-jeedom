@@ -11,8 +11,8 @@
   copy:
     src:        '{{ jeedom__install_directory }}/core/config/common.config.sample.php'
     dest:       '{{ jeedom__common_configuration_file }}'
-    owner:      '{{ jeedom__user }}'
-    group:      '{{ jeedom__group }}'
+    owner:      '{{ jeedom__service_user }}'
+    group:      '{{ jeedom__service_group }}'
     remote_src: True
   when: not _jeedom__common_config_status.stat.exists
 
@@ -47,7 +47,7 @@
 
 - name: Initialize the Jeedom database
   become: True
-  become_user: '{{ jeedom__user }}'
+  become_user: '{{ jeedom__service_user }}'
   become_flags: '-s /bin/bash'
   command: '/usr/bin/env php {{ jeedom__install_directory }}/install/install.php mode=force'
   when: _jeedom__database_installation_status.stdout|length == 0
@@ -56,6 +56,6 @@
   cron:
     name:      JEEDOM-jeeCron
     job:       '/usr/bin/php {{ jeedom__install_directory }}/core/php/jeeCron.php > /dev/null'
-    user:      '{{ jeedom__user }}'
+    user:      '{{ jeedom__service_user }}'
     cron_file: '{{ jeedom__cron_file }}'
     state:     "{{ jeedom__cron_enabled|d(True)|ternary('present', 'absent') }}"

@@ -1,25 +1,25 @@
 ---
 
-- name: Ensure jeedom group '{{ jeedom__group }}' is present
+- name: Ensure jeedom group '{{ jeedom__service_group }}' is present
   group:
-    name:   '{{ jeedom__group }}'
+    name:   '{{ jeedom__service_group }}'
     system: yes
     state:  present
 
-- name: Ensure jeedom user '{{ jeedom__user }}' is present
+- name: Ensure jeedom user '{{ jeedom__service_user }}' is present
   user:
-    name:       '{{ jeedom__user }}'
-    group:      '{{ jeedom__group|d(jeedom__user) }}'
-    groups:     '{{ jeedom__user_groups }}'
+    name:       '{{ jeedom__service_user }}'
+    group:      '{{ jeedom__service_group|d(jeedom__service_user) }}'
+    groups:     '{{ jeedom__service_user_groups }}'
     append:     yes
     createhome: no
     system:     yes
     state:      present
 
-- name: Ensure jeedom user '{{ jeedom__user }}' metadata
+- name: Ensure jeedom user '{{ jeedom__service_user }}' metadata
   user:
-    name:       '{{ jeedom__user }}'
-    group:      '{{ jeedom__group|d(jeedom__user) }}'
+    name:       '{{ jeedom__service_user }}'
+    group:      '{{ jeedom__service_group|d(jeedom__service_user) }}'
     home:       /nonexistent
     shell:      /sbin/nologin
     createhome: no
@@ -30,8 +30,8 @@
 - name: Ensure permissions on install directory
   file:
     dest:    '{{ jeedom__install_directory }}'
-    owner:   '{{ jeedom__user }}'
-    group:   '{{ jeedom__group }}'
+    owner:   '{{ jeedom__service_user }}'
+    group:   '{{ jeedom__service_group }}'
     mode:    'u=rwX,g=rwX,o=rX'
     recurse: yes
     state:   directory
@@ -39,8 +39,8 @@
 - name: Create customs directories
   file:
     dest:  '{{ item }}'
-    owner: '{{ jeedom__user }}'
-    group: '{{ jeedom__group }}'
+    owner: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
     mode:  '0775'
     state: directory
   with_items: '{{ jeedom__custom_folders }}'
@@ -49,8 +49,8 @@
 - name: Configure sudoers rights for Jeedom
   lineinfile:
     path:     /etc/sudoers
-    regexp:   '^{{ jeedom__user }} ALL='
-    line:     '{{ jeedom__user }} ALL=(ALL:ALL) NOPASSWD:ALL'
+    regexp:   '^{{ jeedom__service_user }} ALL='
+    line:     '{{ jeedom__service_user }} ALL=(ALL:ALL) NOPASSWD:ALL'
     validate: 'visudo -cf %s'
     state:    present
   when: not jeedom__sudo_use_sudoers_role|bool
@@ -62,7 +62,7 @@
   vars:
     sudoers__sudo_rule:
       name: jeedom_01
-      users: '{{ jeedom__user }}'
+      users: '{{ jeedom__service_user }}'
       hosts: ALL
       comment: 'Allow jeedom web user to run any commands'
       commands:
@@ -71,11 +71,11 @@
           tags: NOPASSWD
       defaults:
         - defaults: '!requiretty'
-          user: '{{ jeedom__user }}'
+          user: '{{ jeedom__service_user }}'
         - defaults: '!requiretty'
           user: 'root'
         - listpw: never
-          user: '{{ jeedom__user }}'
+          user: '{{ jeedom__service_user }}'
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
 
