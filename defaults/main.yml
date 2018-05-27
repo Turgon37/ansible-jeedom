@@ -16,7 +16,7 @@ jeedom__install_version: stable
 jeedom__install_directory: /var/www/html
 
 # Url of Jeedom repository
-jeedom__install_repository_url: https://github.com/jeedom/core.git
+jeedom__install_archive_url: 'https://github.com/jeedom/core/archive/{{ jeedom__install_version }}.tar.gz'
 
 # List of packages needed for jeedom (core, plugins,...)
 jeedom__packages_core_names:
@@ -31,6 +31,7 @@ jeedom__packages_core_names:
 #  - mbrola
   - python
   - python-pip
+  - python-setuptools
   - python-wheel
   - sudo
   - tar

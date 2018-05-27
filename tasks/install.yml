@@ -11,17 +11,24 @@
     path:   '{{ jeedom__install_directory }}/composer.json'
   register: _jeedom__install_status
 
-- name: Remove default directory when jeedom is not installed
+- name: List default files when jeedom is not installed
+  find:
+    paths:     '{{ jeedom__install_directory }}'
+    file_type: file
+  when: not _jeedom__install_status.stat.exists
+  register: _jeedom__install_files
+
+- name: Remove default files when jeedom is not installed
   file:
-    path:  '{{ jeedom__install_directory }}'
+    path:  '{{ item.path }}'
     state: absent
+  with_items: '{{ _jeedom__install_files.files }}'
   when: not _jeedom__install_status.stat.exists
 
-- name: Checkout Jeedom source from repository
-  git:
-    repo:    '{{ jeedom__install_repository_url }}'
-    dest:    '{{ jeedom__install_directory }}'
-    version: '{{ jeedom__install_version }}'
-    clone:   True
-    update:  False
+- name: Install jeedom from release archive
+  unarchive:
+    src:        '{{ jeedom__install_archive_url }}'
+    dest:       '{{ jeedom__install_directory }}'
+    extra_opts: --strip-components=1
+    remote_src: yes
   when: not _jeedom__install_status.stat.exists
