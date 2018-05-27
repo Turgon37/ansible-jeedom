@@ -4,6 +4,6 @@
   assert:
     that:
       - jeedom__install_directory is defined and jeedom__install_directory|length > 0
-      - jeedom__user is defined and jeedom__user|length > 0
-      - jeedom__group is not defined or jeedom__group|length > 0
+      - jeedom__service_user is defined and jeedom__service_user|length > 0
+      - jeedom__service_group is not defined or jeedom__service_group|length > 0
       - ansible_distribution_version is version('9', '<') or jeedom__php_version is version('5', '>')
