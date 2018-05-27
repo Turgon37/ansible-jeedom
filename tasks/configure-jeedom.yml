@@ -45,7 +45,10 @@
   changed_when: False
   check_mode: False
 
-- name: initialize the Jeedom database
+- name: Initialize the Jeedom database
+  become: True
+  become_user: '{{ jeedom__user }}'
+  become_flags: '-s /bin/bash'
   command: '/usr/bin/env php {{ jeedom__install_directory }}/install/install.php mode=force'
   when: _jeedom__database_installation_status.stdout|length == 0
 

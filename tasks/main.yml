@@ -27,5 +27,6 @@
 - import_tasks: configure.yml
   tags: ['jeedom', 'jeedom-configure']
 
-#- include_tasks: facts.yml
-  #when: jeedom__facts|bool
+- include_tasks: facts.yml
+  when: jeedom__facts|bool
+  tags: ['jeedom', 'jeedom-facts']
