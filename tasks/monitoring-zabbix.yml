@@ -1,0 +1,16 @@
+---
+
+- name: Configure zabbix userparameters
+  include_role:
+    name: zabbix-agent
+    tasks_from: userparameter
+  vars:
+    zabbix_agent__userparameter:
+      name: jeedom
+      userparameters:
+        - key: jeedom.processus.discovery
+          command: >
+            /usr/bin/env python -c 'import json, sys; json.dump({"data": list(map(lambda x: dict(map(lambda kv: ("{"+"#JEEDOM_"+kv[0].upper()+"}", kv[1]), x.items())), {{ jeedom__processus_monitoring|to_json}} ))}, sys.stdout)'
+          comment: Return zabbix discovery item for jeedom processus to monitor
+      state: present
+  tags: ['jeedom', 'jeedom-monitoring']

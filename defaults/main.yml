@@ -105,6 +105,18 @@ jeedom__service_user_groups:
 jeedom__sudo_use_sudoers_role: False
 
 
+### MONITORING CONFIGURATION
+# ---------------------------------------
+# List of jeedom sub process to monitor
+# According to your installed plugins set this item to feed zabbix discovery item
+# Follow this example:
+# jeedom__processus_monitoring:
+#  - process_name: python
+#    user: root
+#    cmdline: broadlinkd.py
+jeedom__processus_monitoring: []
+
+
 ### JEEDOM CONFIGURATION
 # ---------------------------------------
 
