@@ -58,7 +58,7 @@
 - name: Configure sudoers rights for Jeedom
   include_role:
     name: sudoers
-    tasks_from: sudo_rule
+    tasks_from: types/sudo_rule
   vars:
     sudoers__sudo_rule:
       name: jeedom_01
