@@ -1,0 +1,50 @@
+---
+- name: Run role
+  hosts: all
+  any_errors_fatal: true
+  pre_tasks:
+    - name: Include the OS specific variables
+      include_vars: '{{ item }}'
+      with_first_found:
+        - files:
+            - '{{ ansible_os_family }}.yml'
+          skip: true
+
+    - name: Install prerequisites packages
+      package:
+        name: '{{ item }}'
+        state: present
+      with_items: '{{ pre_tasks__packages_names|d([]) }}'
+
+    - name: Create private key
+      openssl_privatekey:
+        path: '{{ jeedom_ssl_key }}'
+        size: 1024
+        type: RSA
+        state: present
+
+    - name: Create certificate request
+      openssl_csr:
+        path: '{{ jeedom_ssl_csr }}'
+        privatekey_path: '{{ jeedom_ssl_key }}'
+        common_name: jeedom
+        subject_alt_name: 'DNS:jeedom,DNS:localhost,IP:127.0.0.1'
+        state: present
+
+    - name: Create certificate
+      openssl_certificate:
+        path: '{{ jeedom_ssl_cert }}'
+        privatekey_path: '{{ jeedom_ssl_key }}'
+        csr_path: '{{ jeedom_ssl_csr }}'
+        provider: selfsigned
+        state: present
+  roles:
+    - role: cron
+    - role: mariadb-server
+    - role: apache2
+    - role: php
+    - role: ansible-jeedom
+  vars:
+    jeedom_ssl_key: /etc/ssl/jeedom.key
+    jeedom_ssl_csr: /etc/ssl/jeedom.csr
+    jeedom_ssl_cert: /etc/ssl/jeedom.pem

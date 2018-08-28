@@ -1,0 +1,13 @@
+---
+
+- name: apache2
+  src: turgon37.apache2
+
+- name: cron
+  src: turgon37.cron
+
+- name: mariadb-server
+  src: turgon37.mariadb_server
+
+- name: php
+  src: turgon37.php

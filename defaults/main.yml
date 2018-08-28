@@ -1,14 +1,11 @@
 ---
-# defaults file for jeedom
-
-# Simple placeholder to allow other roles to detect this role
-jeedom__role: True
+# defaults file for ansible-jeedom
 
 # Enable facts deploiement
-jeedom__facts: True
+jeedom__facts: true
 
 # Choose the monitoring backend to configure (if available)
-#jeedom__monitoring:
+# jeedom__monitoring:
 
 
 ### INSTALL CONFIGURATION
@@ -23,16 +20,11 @@ jeedom__install_directory: /var/www/html
 jeedom__install_archive_url: 'https://github.com/jeedom/core/archive/{{ jeedom__install_version }}.tar.gz'
 
 # List of packages needed for jeedom (core, plugins,...)
-jeedom__packages_core_names:
+jeedom__packages_names:
   - ca-certificates
   - cron
   - curl
-#  - espeak
   - git
-#  - libttspico-utils
-#  - ntp  # handled by ntp role
-#  - ntpdate
-#  - mbrola
   - python
   - python-pip
   - python-setuptools
@@ -42,55 +34,9 @@ jeedom__packages_core_names:
   - unzip
   - zlib1g-dev
 
-# List of php packages to install per php version
-jeedom__packages_php_names:
-  5:
-    - php5
-    - php5-cli
-    - php5-common
-    - php5-curl
-    - php5-gd
-    - php5-json
-    - php5-ldap
-    - php5-memcached
-    - php5-mysql
-    - php5-redis
-    - php5-ssh2
-#  - libapache2-mod-php5
-  7:
-    - php7.0
-    - php7.0-calendar
-    - php7.0-common
-    - php7.0-curl
-    - php7.0-gd
-    - php7.0-imap
-    - php7.0-json
-    - php7.0-ldap
-    - php7.0-mcrypt
-    - php7.0-mysql
-    - php7.0-opcache
-    - php7.0-soap
-    - php7.0-ssh2
-    - php7.0-xml
-    - php7.0-xmlrpc
-    - php7.0-zip
-  # libapache2-mod-php7.0
-
-# Which php version is available to install
-jeedom__php_version: "{{
-  5 if ansible_distribution_version is version('9', '<')
-  else 7
-  }}"
-
-# Final list of packages to install
-jeedom__packages_names: '{{ jeedom__packages_core_names
-                              |union(jeedom__packages_php_names[jeedom__php_version|int])
-                          }}'
-
 
 ### SERVICE CONFIGURATION
 # ---------------------------------------
-
 # Set the linux user and group use by jeedom, php and other daemon related to jeedom
 jeedom__service_user: www-data
 
@@ -100,9 +46,6 @@ jeedom__service_group: '{{ jeedom__service_user }}'
 # List of groups to add jeedom user into
 jeedom__service_user_groups:
   - dialout
-
-# Set to true to use the new sudoers role instead of lineinfile action
-jeedom__sudo_use_sudoers_role: False
 
 
 ### MONITORING CONFIGURATION
@@ -119,6 +62,8 @@ jeedom__processus_monitoring: []
 
 ### JEEDOM CONFIGURATION
 # ---------------------------------------
+# Set to true to use the new sudoers role instead of lineinfile action
+jeedom__sudo_use_sudoers_role: false
 
 # Jeedom common configuration file
 jeedom__common_configuration_file: '{{ jeedom__install_directory }}/core/config/common.config.php'
@@ -130,27 +75,9 @@ jeedom__custom_folders:
 # Jeedom database configuration
 jeedom__config_db_host: localhost
 jeedom__config_db_port: 3306
-#jeedom__config_db_dbname: 'jeedom'
-#jeedom__config_db_username: 
-#jeedom__config_db_password: 
+# jeedom__config_db_dbname: jeedom
+# jeedom__config_db_username:
+# jeedom__config_db_password:
 
 # Set the cron file
 jeedom__cron_file: jeedom-jeeCron
-
-
-# List of php settings to apply
-jeedom__php_directives:
-  - regexp: '^max_execution_time\s*=\s*.*$'
-    line: 'max_execution_time = 300'
-
-  - regexp: '^upload_max_filesize\s*=\s*.*$'
-    line:  'upload_max_filesize = 1G'
-
-  - regexp: '^post_max_size\s*=\s*.*$'
-    line: 'post_max_size = 1G'
-
-  - regexp: '^;?opcache.enable\s*=\s*.$'
-    line: 'opcache.enable = 1'
-
-  - regexp: '^;?opcache.enable_cli\s*=\s*.$'
-    line: 'opcache.enable_cli = 1'

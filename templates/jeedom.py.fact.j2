@@ -3,14 +3,13 @@
 import json
 import os
 import re
-import subprocess
 import sys
 
 jeedom_root_path = '{{ jeedom__install_directory }}'
 jeedom_version_file = os.path.join(jeedom_root_path, 'core/config/version')
 jeedom_plugins_dir = os.path.join(jeedom_root_path, 'plugins')
 
-content=dict()
+content = dict()
 
 version_re = re.compile('^(?P<version>(?P<major>[0-9]+)[0-9\.]+).*$')
 try:

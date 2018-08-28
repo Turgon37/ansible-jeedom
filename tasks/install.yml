@@ -2,33 +2,33 @@
 
 - name: Install the jeedom required packages
   package:
-    name:  '{{ item }}'
+    name: '{{ item }}'
     state: present
-  with_items: '{{ jeedom__packages_names }}'
+  with_items: '{{ jeedom__packages_names|list }}'
 
 - name: Test for Jeedom installation
   stat:
-    path:   '{{ jeedom__install_directory }}/composer.json'
+    path: '{{ jeedom__install_directory }}/composer.json'
   register: _jeedom__install_status
 
 - name: List default files when jeedom is not installed
   find:
-    paths:     '{{ jeedom__install_directory }}'
+    paths: '{{ jeedom__install_directory }}'
     file_type: file
   when: not _jeedom__install_status.stat.exists
   register: _jeedom__install_files
 
 - name: Remove default files when jeedom is not installed
   file:
-    path:  '{{ item.path }}'
+    path: '{{ path }}'
     state: absent
-  with_items: '{{ _jeedom__install_files.files }}'
+  with_items: "{{ _jeedom__install_files.files|map(attribute='path')|list }}"
   when: not _jeedom__install_status.stat.exists
 
 - name: Install jeedom from release archive
   unarchive:
-    src:        '{{ jeedom__install_archive_url }}'
-    dest:       '{{ jeedom__install_directory }}'
+    src: '{{ jeedom__install_archive_url }}'
+    dest: '{{ jeedom__install_directory }}'
     extra_opts: --strip-components=1
-    remote_src: yes
+    remote_src: true
   when: not _jeedom__install_status.stat.exists

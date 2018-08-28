@@ -3,7 +3,7 @@
 - name: Configure zabbix userparameters
   include_role:
     name: zabbix-agent
-    tasks_from: userparameter
+    tasks_from: types/user_parameter
   vars:
     zabbix_agent__userparameter:
       name: jeedom

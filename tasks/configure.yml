@@ -2,57 +2,58 @@
 
 - name: Ensure jeedom group '{{ jeedom__service_group }}' is present
   group:
-    name:   '{{ jeedom__service_group }}'
-    system: yes
-    state:  present
+    name: '{{ jeedom__service_group }}'
+    system: true
+    state: present
 
 - name: Ensure jeedom user '{{ jeedom__service_user }}' is present
   user:
-    name:       '{{ jeedom__service_user }}'
-    group:      '{{ jeedom__service_group|d(jeedom__service_user) }}'
-    groups:     '{{ jeedom__service_user_groups }}'
-    append:     yes
-    createhome: no
-    system:     yes
-    state:      present
+    name: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    groups: '{{ jeedom__service_user_groups }}'
+    append: true
+    createhome: false
+    system: true
+    state: present
 
 - name: Ensure jeedom user '{{ jeedom__service_user }}' metadata
   user:
-    name:       '{{ jeedom__service_user }}'
-    group:      '{{ jeedom__service_group|d(jeedom__service_user) }}'
-    home:       /nonexistent
-    shell:      /sbin/nologin
-    createhome: no
-    system:     yes
-    state:      present
-  ignore_errors: yes
+    name: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    home: /nonexistent
+    shell: /sbin/nologin
+    createhome: false
+    system: true
+    state: present
+  ignore_errors: true
 
 - name: Ensure permissions on install directory
   file:
-    dest:    '{{ jeedom__install_directory }}'
-    owner:   '{{ jeedom__service_user }}'
-    group:   '{{ jeedom__service_group }}'
-    mode:    'u=rwX,g=rwX,o=rX'
-    recurse: yes
-    state:   directory
+    dest: '{{ jeedom__install_directory }}'
+    owner: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    mode: 'u=rwX,g=rwX,o=rX'
+    recurse: true
+    state: directory
 
 - name: Create customs directories
   file:
-    dest:  '{{ item }}'
+    dest: '{{ item }}'
     owner: '{{ jeedom__service_user }}'
     group: '{{ jeedom__service_group }}'
-    mode:  '0775'
+    mode: '0775'
     state: directory
-  with_items: '{{ jeedom__custom_folders }}'
+  with_items: '{{ jeedom__custom_folders|list }}'
 
 ### Configure sudo rights
+
 - name: Configure sudoers rights for Jeedom
   lineinfile:
-    path:     /etc/sudoers
-    regexp:   '^{{ jeedom__service_user }} ALL='
-    line:     '{{ jeedom__service_user }} ALL=(ALL:ALL) NOPASSWD:ALL'
+    path: /etc/sudoers
+    regexp: '^{{ jeedom__service_user }} ALL='
+    line: '{{ jeedom__service_user }} ALL=(ALL:ALL) NOPASSWD:ALL'
     validate: 'visudo -cf %s'
-    state:    present
+    state: present
   when: not jeedom__sudo_use_sudoers_role|bool
 
 - name: Configure sudoers rights for Jeedom
@@ -79,24 +80,62 @@
       state: present
   when: jeedom__sudo_use_sudoers_role|bool
 
-### PHP TODO move to a dedicated role
-- name: Search for php.ini in /etc
-  find:
-    paths:     '/etc/'
-    patterns:  'php.ini'
-    file_type: file
-    recurse:   yes
-  register: _jeedom__find_php_inis
-  check_mode: no
+### JEEDOM configuration init
 
-- name: Configure php.ini
-  lineinfile:
-    path:   '{{ item[0] }}'
-    regexp: '{{ item[1].regexp }}'
-    line:   '{{ item[1].line }}'
-  with_nested:
-    - "{{ _jeedom__find_php_inis.files|map(attribute='path') | list }}"
-    - '{{ jeedom__php_directives }}'
+- name: Check presence of common.config
+  stat:
+    path: '{{ jeedom__common_configuration_file }}'
+  register: _jeedom__common_config_status
 
-- import_tasks: configure-jeedom.yml
-  tags: ['jeedom', 'jeedom-configure-jeedom']
+- name: Copy configuration template
+  copy:
+    src: '{{ jeedom__install_directory }}/core/config/common.config.sample.php'
+    dest: '{{ jeedom__common_configuration_file }}'
+    owner: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    remote_src: true
+  when: not _jeedom__common_config_status.stat.exists
+
+- name: Configure database params
+  replace:
+    path: '{{ jeedom__common_configuration_file }}'
+    regexp: '#{{ item.key }}#'
+    replace: '{{ item.value }}'
+  with_items:
+    - key: HOST
+      value: '{{ jeedom__config_db_host }}'
+    - key: PORT
+      value: '{{ jeedom__config_db_port }}'
+    - key: DBNAME
+      value: '{{ jeedom__config_db_dbname }}'
+    - key: USERNAME
+      value: '{{ jeedom__config_db_username }}'
+    - key: PASSWORD
+      value: '{{ jeedom__config_db_password }}'
+  no_log: true
+
+- name: Check if database is initialized
+  command: >
+    /usr/bin/env mysql
+    --user={{ jeedom__config_db_username }}
+    --password={{ jeedom__config_db_password }}
+    --batch --skip-column-names
+    --execute="SHOW TABLES FROM `{{ jeedom__config_db_dbname }}` LIKE '%config%'"
+  register: _jeedom__database_installation_status
+  changed_when: false
+  check_mode: false
+
+- name: Initialize the Jeedom database
+  become: true
+  become_user: '{{ jeedom__service_user }}'
+  become_flags: '-s /bin/bash'
+  command: '/usr/bin/env php {{ jeedom__install_directory }}/install/install.php mode=force'
+  when: _jeedom__database_installation_status.stdout|length == 0
+
+- name: Configure crontab jobs
+  cron:
+    name: JEEDOM-jeeCron
+    job: '/usr/bin/php {{ jeedom__install_directory }}/core/php/jeeCron.php > /dev/null'
+    user: '{{ jeedom__service_user }}'
+    cron_file: '{{ jeedom__cron_file }}'
+    state: "{{ jeedom__cron_enabled|ternary('present', 'absent') }}"

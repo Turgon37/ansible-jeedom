@@ -2,18 +2,18 @@
 
 - name: Create custom fact directory
   file:
-    path:  "{{ facts__dir|d('/etc/ansible/facts.d') }}"
+    path: "{{ facts__dir|d('/etc/ansible/facts.d') }}"
     owner: root
     group: root
-    mode:  0755
+    mode: 0755
     state: directory
   tags: ['jeedom', 'jeedom-facts']
 
 - name: Insert custom fact file
   template:
-    src:   jeedom.py.fact.j2
-    dest:  "{{ facts__dir|d('/etc/ansible/facts.d') }}/jeedom.fact"
+    src: jeedom.fact.py.j2
+    dest: "{{ facts__dir|d('/etc/ansible/facts.d') }}/jeedom.fact"
     owner: root
     group: root
-    mode:  0755
+    mode: 0755
   tags: ['jeedom', 'jeedom-facts']
