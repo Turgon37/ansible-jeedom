@@ -11,7 +11,7 @@
 
 - name: Insert custom fact file
   template:
-    src: jeedom.fact.py.j2
+    src: jeedom.facts.py.j2
     dest: "{{ facts__dir|d('/etc/ansible/facts.d') }}/jeedom.fact"
     owner: root
     group: root

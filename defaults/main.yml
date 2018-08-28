@@ -81,3 +81,6 @@ jeedom__config_db_port: 3306
 
 # Set the cron file
 jeedom__cron_file: jeedom-jeeCron
+
+# Enable the jeecron
+jeedom__cron_enabled: true
