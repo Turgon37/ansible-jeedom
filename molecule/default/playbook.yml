@@ -41,8 +41,8 @@
   roles:
     - role: cron
     - role: mariadb-server
-    - role: apache2
     - role: php
+    - role: apache2
     - role: ansible-jeedom
   vars:
     jeedom_ssl_key: /etc/ssl/jeedom.key
