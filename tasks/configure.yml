@@ -127,7 +127,7 @@
 - name: Initialize the Jeedom database
   become: true
   become_user: '{{ jeedom__service_user }}'
-  become_flags: '-s /bin/bash'
+  become_flags: '-s /bin/sh'
   command: '/usr/bin/env php {{ jeedom__install_directory }}/install/install.php mode=force'
   when: _jeedom__database_installation_status.stdout|length == 0
 
