@@ -112,7 +112,6 @@
       value: '{{ jeedom__config_db_username }}'
     - key: PASSWORD
       value: '{{ jeedom__config_db_password }}'
-  no_log: true
 
 - name: Check if database is initialized
   command: >

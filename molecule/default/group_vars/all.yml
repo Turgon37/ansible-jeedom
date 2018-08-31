@@ -1,5 +1,16 @@
 ---
 
+mariadb_server__databases:
+  jeedom:
+    collation: utf8_general_ci
+    encoding: utf8
+
+mariadb_server__users:
+  - user: jeedom
+    password: jeedom
+    host: localhost
+    priv: 'jeedom.*:SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,LOCK TABLES'
+
 apache2__module_mpm_prefork_max_request_workers: 10
 apache2__service_private_tmp: false
 apache2__modules_enabled_group:
@@ -62,3 +73,10 @@ php__settings_group:
 
 php__cli_settings_group:
   opcache/opcache.enable_cli: 1
+
+
+jeedom__config_db_host: localhost
+jeedom__config_db_port: 3306
+jeedom__config_db_dbname: jeedom
+jeedom__config_db_username: jeedom
+jeedom__config_db_password: jeedom
