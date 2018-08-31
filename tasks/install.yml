@@ -20,7 +20,7 @@
 
 - name: Remove default files when jeedom is not installed
   file:
-    path: '{{ path }}'
+    path: '{{ item }}'
     state: absent
   with_items: "{{ _jeedom__install_files.files|map(attribute='path')|list }}"
   when: not _jeedom__install_status.stat.exists

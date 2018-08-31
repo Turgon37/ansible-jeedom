@@ -17,6 +17,7 @@ apache2__modules_enabled_group:
   - php7.0
   - ssl
   - socache_shmcb
+
 php__cli: true
 php__apachemod: true
 php__extensions_group:
@@ -47,11 +48,17 @@ php__extensions_group:
   zip:
   ssh2:
 
+php__extensions_default: {}
+
+php__apachemod_service_name: apache2
+
 php__settings_group:
   PHP/max_execution_time: 300
   PHP/upload_max_filesize: 1G
   PHP/post_max_size: 1G
   opcache/opcache.enable: 1
+  Date/date.timezone: 'Europe/Paris'
+  PHP/expose_php: 'Off'
 
 php__cli_settings_group:
   opcache/opcache.enable_cli: 1
