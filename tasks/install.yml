@@ -6,6 +6,33 @@
     state: present
   with_items: '{{ jeedom__packages_names|list }}'
 
+- name: Ensure jeedom group '{{ jeedom__service_group }}' is present
+  group:
+    name: '{{ jeedom__service_group }}'
+    system: true
+    state: present
+
+- name: Ensure jeedom user '{{ jeedom__service_user }}' is present
+  user:
+    name: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    groups: '{{ jeedom__service_user_groups }}'
+    append: true
+    createhome: false
+    system: true
+    state: present
+
+- name: Ensure jeedom user '{{ jeedom__service_user }}' metadata
+  user:
+    name: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    home: /nonexistent
+    shell: /sbin/nologin
+    createhome: false
+    system: true
+    state: present
+  ignore_errors: true
+
 - name: Test for Jeedom installation
   stat:
     path: '{{ jeedom__install_directory }}/composer.json'
@@ -32,3 +59,14 @@
     extra_opts: --strip-components=1
     remote_src: true
   when: not _jeedom__install_status.stat.exists
+  register: _jeedom__install_archive
+
+- name: Ensure permissions on install directory
+  file:
+    dest: '{{ jeedom__install_directory }}'
+    owner: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    mode: 'u=rwX,g=rwX,o=rX'
+    recurse: true
+    state: directory
+  when: _jeedom__install_archive is changed
