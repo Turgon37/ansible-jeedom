@@ -1,0 +1,82 @@
+---
+
+mariadb_server__databases:
+  jeedom:
+    collation: utf8_general_ci
+    encoding: utf8
+
+mariadb_server__users:
+  - user: jeedom
+    password: jeedom
+    host: localhost
+    priv: 'jeedom.*:SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,LOCK TABLES'
+
+apache2__module_mpm_prefork_max_request_workers: 10
+apache2__service_private_tmp: false
+apache2__modules_enabled_group:
+  - access_compat
+  - alias
+  - authn_core
+  - authz_core
+  - deflate
+  - dir
+  - env
+  - headers
+  - mime
+  - mpm_prefork
+  - negotiation
+  - php7.0
+  - ssl
+  - socache_shmcb
+
+php__cli: true
+php__apachemod: true
+php__extensions_group:
+  calendar:
+  ctype:
+  curl:
+  dom:
+  ftp:
+  gd:
+  gettext:
+  iconv:
+  imap:
+  json:
+  ldap:
+  mcrypt:
+  mysqlnd:
+  opcache:
+  pdo:
+  pdo_mysql:
+  posix:
+  readline:
+  simplexml:
+  sockets:
+  xml:
+  xmlrpc:
+  xmlreader:
+  xmlwriter:
+  zip:
+  ssh2:
+
+php__extensions_default: {}
+
+php__apachemod_service_name: apache2
+
+php__settings_group:
+  PHP/max_execution_time: 300
+  PHP/upload_max_filesize: 1G
+  PHP/post_max_size: 1G
+  opcache/opcache.enable: 1
+  Date/date.timezone: 'Europe/Paris'
+  PHP/expose_php: 'Off'
+
+php__cli_settings_group:
+  opcache/opcache.enable_cli: 1
+
+
+jeedom__config_db_host: localhost
+jeedom__config_db_port: 3306
+jeedom__config_db_dbname: jeedom
+jeedom__config_db_username: jeedom
+jeedom__config_db_password: jeedom

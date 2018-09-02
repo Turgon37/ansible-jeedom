@@ -1,12 +1,16 @@
+---
 galaxy_info:
+  role_name: jeedom
   author: Pierre GINDRAUD
   description: This role configure Jeedom application
   license: MIT
-  min_ansible_version: 2.5
+  min_ansible_version: 2.4
   platforms:
-    - name: Armbian
+    - name: Debian
       versions:
-        - 9
-  galaxy_tags: []
+        - stretch
+  galaxy_tags:
+    - jeedom
+    - domotic
 
 dependencies: []

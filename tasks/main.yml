@@ -1,5 +1,5 @@
 ---
-# tasks file for jeedom
+# tasks file for ansible-jeedom
 
 - name: Include the OS specific variables
   include_vars: '{{ item }}'
@@ -18,14 +18,24 @@
   when: ansible_os_family != 'Debian'
   tags: ['always']
 
-- import_tasks: init.yml
+- name: Importing initialization tasks
+  import_tasks: init.yml
   tags: ['always']
 
-- import_tasks: install.yml
+- name: Import install tasks
+  import_tasks: install.yml
   tags: ['jeedom', 'jeedom-install']
 
-- import_tasks: configure.yml
+- name: Import configurations tasks
+  import_tasks: configure.yml
   tags: ['jeedom', 'jeedom-configure']
 
-#- include_tasks: facts.yml
-  #when: jeedom__facts|bool
+- name: Optionally include monitoring tasks
+  include_tasks: 'monitoring/{{ jeedom__monitoring }}.yml'
+  when: php__monitoring is defined
+  tags: ['jeedom', 'jeedom-monitoring']
+
+- name: Optionally include facts tasks
+  include_tasks: facts.yml
+  when: jeedom__facts|bool
+  tags: ['jeedom', 'jeedom-facts']

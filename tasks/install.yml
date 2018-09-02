@@ -2,26 +2,71 @@
 
 - name: Install the jeedom required packages
   package:
-    name:  '{{ item }}'
+    name: '{{ item }}'
     state: present
-  with_items: '{{ jeedom__packages_names }}'
+  with_items: '{{ jeedom__packages_names|list }}'
+
+- name: Ensure jeedom group '{{ jeedom__service_group }}' is present
+  group:
+    name: '{{ jeedom__service_group }}'
+    system: true
+    state: present
+
+- name: Ensure jeedom user '{{ jeedom__service_user }}' is present
+  user:
+    name: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    groups: '{{ jeedom__service_user_groups }}'
+    append: true
+    createhome: false
+    system: true
+    state: present
+
+- name: Ensure jeedom user '{{ jeedom__service_user }}' metadata
+  user:
+    name: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    home: /nonexistent
+    shell: /sbin/nologin
+    createhome: false
+    system: true
+    state: present
+  ignore_errors: true
 
 - name: Test for Jeedom installation
   stat:
-    path:   '{{ jeedom__install_directory }}/composer.json'
+    path: '{{ jeedom__install_directory }}/composer.json'
   register: _jeedom__install_status
 
-- name: Remove default directory when jeedom is not installed
+- name: List default files when jeedom is not installed
+  find:
+    paths: '{{ jeedom__install_directory }}'
+    file_type: file
+  when: not _jeedom__install_status.stat.exists
+  register: _jeedom__install_files
+
+- name: Remove default files when jeedom is not installed
   file:
-    path:  '{{ jeedom__install_directory }}'
+    path: '{{ item }}'
     state: absent
+  with_items: "{{ _jeedom__install_files.files|map(attribute='path')|list }}"
   when: not _jeedom__install_status.stat.exists
 
-- name: Checkout Jeedom source from repository
-  git:
-    repo:    '{{ jeedom__install_repository_url }}'
-    dest:    '{{ jeedom__install_directory }}'
-    version: '{{ jeedom__install_version }}'
-    clone:   True
-    update:  False
+- name: Install jeedom from release archive
+  unarchive:
+    src: '{{ jeedom__install_archive_url }}'
+    dest: '{{ jeedom__install_directory }}'
+    extra_opts: --strip-components=1
+    remote_src: true
   when: not _jeedom__install_status.stat.exists
+  register: _jeedom__install_archive
+
+- name: Ensure permissions on install directory
+  file:
+    dest: '{{ jeedom__install_directory }}'
+    owner: '{{ jeedom__service_user }}'
+    group: '{{ jeedom__service_group }}'
+    mode: 'u=rwX,g=rwX,o=rX'
+    recurse: true
+    state: directory
+  when: _jeedom__install_archive is changed
