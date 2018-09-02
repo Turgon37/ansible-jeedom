@@ -74,6 +74,7 @@ php__settings_group:
 php__cli_settings_group:
   opcache/opcache.enable_cli: 1
 
+jeedom__sudo_use_sudoers_role: true
 
 jeedom__config_db_host: localhost
 jeedom__config_db_port: 3306
