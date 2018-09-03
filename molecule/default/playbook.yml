@@ -40,6 +40,7 @@
         state: present
   roles:
     - role: cron
+    - role: sudoers
     - role: mariadb-server
     - role: php
     - role: apache2

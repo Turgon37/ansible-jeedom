@@ -11,3 +11,6 @@
 
 - name: php
   src: turgon37.php
+
+- name: sudoers
+  src: turgon37.sudoers
